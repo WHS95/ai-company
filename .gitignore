@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Editors
+.vscode/
+.idea/
+*.iml
+
+# Build artifacts
+*.tar.gz
+*.zip
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test outputs
+.test-output/
+coverage/
+
+# AI Company runtime data (절대 커밋하지 않음)
+# 이 파일은 플러그인 사용자의 프로젝트에 생성되는 것이지,
+# 플러그인 자체에 들어가지 않습니다.
+.ai-company/

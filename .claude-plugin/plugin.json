@@ -1,0 +1,34 @@
+{
+  "name": "ai-company",
+  "version": "0.2.0",
+  "description": "프로젝트를 분석하여 그 프로젝트만의 전문가들을 동적으로 생성하는 AI 개발 회사 플러그인. 회장(=사용자)의 검토·승인을 거쳐 회사를 설립한 뒤, 매 요청마다 적합한 팀이 회의·합의를 거쳐 작업을 처리합니다. tmux로 모든 과정 가시화, 자동 기록 및 칸반 대시보드 포함.",
+  "author": {
+    "name": "Ale (WHS95)",
+    "url": "https://github.com/WHS95"
+  },
+  "homepage": "https://github.com/WHS95/ai-company",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WHS95/ai-company.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WHS95/ai-company/issues"
+  },
+  "keywords": [
+    "agent-teams",
+    "orchestration",
+    "fullstack",
+    "tmux",
+    "kanban",
+    "project-management",
+    "dynamic-agents",
+    "ai-company",
+    "multi-agent"
+  ],
+  "license": "MIT",
+  "requirements": {
+    "claudeCodeVersion": ">=2.1.32",
+    "experimental": ["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"],
+    "optional": ["tmux", "jq"]
+  }
+}

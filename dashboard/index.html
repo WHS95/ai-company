@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Company · Operations Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-elev: #11161e;
+    --bg-elev-2: #161c26;
+    --border: #1f2937;
+    --border-bright: #334155;
+    --text: #e6edf3;
+    --text-dim: #8b96a8;
+    --text-faint: #5a6478;
+    --accent: #5ee3a8;       /* signal green */
+    --accent-2: #ff7d4a;     /* alert orange */
+    --accent-3: #7aa2f7;     /* info blue */
+    --accent-4: #f7768e;     /* danger pink */
+    --accent-5: #e0af68;     /* warning amber */
+    --grid: rgba(94, 227, 168, 0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(circle at 20% 0%, rgba(94,227,168,0.06), transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(122,162,247,0.05), transparent 50%),
+      var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--bg-elev) 0%, transparent 100%);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--accent);
+    display: grid;
+    place-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    color: var(--accent);
+    position: relative;
+  }
+  .brand-mark::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 1px solid var(--accent);
+    opacity: 0.3;
+  }
+
+  .brand-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+  .brand-text small {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text-faint);
+    letter-spacing: 2px;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .tab {
+    padding: 14px 22px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab .count {
+    margin-left: 8px;
+    background: var(--bg-elev);
+    color: var(--text-dim);
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .tab.active .count {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ─── MAIN ─── */
+  main { padding: 24px 32px 80px; }
+
+  /* ─── METRICS BAR ─── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .metric {
+    padding: 16px 18px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    position: relative;
+  }
+  .metric.green { border-left-color: var(--accent); }
+  .metric.orange { border-left-color: var(--accent-2); }
+  .metric.blue { border-left-color: var(--accent-3); }
+  .metric.pink { border-left-color: var(--accent-4); }
+  .metric.amber { border-left-color: var(--accent-5); }
+  .metric .label {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .metric .value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 6px;
+    line-height: 1;
+  }
+  .metric .delta {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ─── KANBAN BOARD ─── */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    min-height: 60vh;
+  }
+
+  .column {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+  }
+
+  .column-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-elev-2);
+  }
+  .column-header h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-icon {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .column[data-status="pending"] .col-icon { background: var(--text-faint); }
+  .column[data-status="in_progress"] .col-icon { background: var(--accent-5); box-shadow: 0 0 6px var(--accent-5); }
+  .column[data-status="completed"] .col-icon { background: var(--accent); }
+  .column[data-status="blocked"] .col-icon { background: var(--accent-4); }
+
+  .column[data-status="pending"] .column-header h3 { color: var(--text-dim); }
+  .column[data-status="in_progress"] .column-header h3 { color: var(--accent-5); }
+  .column[data-status="completed"] .column-header h3 { color: var(--accent); }
+  .column[data-status="blocked"] .column-header h3 { color: var(--accent-4); }
+
+  .col-count {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .card-list {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .card:hover {
+    border-color: var(--border-bright);
+    transform: translateX(2px);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent-3);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card-id {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+  }
+  .card-title {
+    font-size: 13px;
+    color: var(--text);
+    margin: 4px 0 8px;
+    line-height: 1.4;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+  }
+  .card-assignee {
+    color: var(--accent-3);
+    background: rgba(122,162,247,0.08);
+    padding: 2px 6px;
+    border-left: 2px solid var(--accent-3);
+  }
+  .card-time {
+    color: var(--text-faint);
+  }
+  .card-deps {
+    margin-top: 6px;
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+  }
+  .card-deps span {
+    color: var(--accent-5);
+  }
+
+  .empty-col {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 11px;
+    padding: 40px 12px;
+    font-style: italic;
+  }
+
+  /* ─── TIMELINE ─── */
+  .timeline-view {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .timeline-list::before {
+    content: '';
+    position: absolute;
+    left: 80px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 80px 32px 1fr;
+    align-items: start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-time {
+    font-size: 11px;
+    color: var(--text-faint);
+    padding-right: 16px;
+    text-align: right;
+  }
+  .timeline-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg-elev);
+    border: 2px solid var(--accent-3);
+    margin: 4px auto 0;
+    position: relative;
+    z-index: 1;
+  }
+  .timeline-item[data-type="task_completed"] .timeline-marker { border-color: var(--accent); }
+  .timeline-item[data-type="task_blocked"] .timeline-marker { border-color: var(--accent-4); }
+  .timeline-item[data-type="meeting_concluded"] .timeline-marker { border-color: var(--accent-5); }
+  .timeline-item[data-type="intervention"] .timeline-marker { border-color: var(--accent-2); }
+
+  .timeline-content {
+    padding-left: 12px;
+  }
+  .timeline-type {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-3);
+  }
+  .timeline-item[data-type="task_completed"] .timeline-type { color: var(--accent); }
+  .timeline-item[data-type="task_blocked"] .timeline-type { color: var(--accent-4); }
+  .timeline-item[data-type="meeting_concluded"] .timeline-type { color: var(--accent-5); }
+
+  .timeline-desc {
+    font-size: 12px;
+    margin-top: 2px;
+    color: var(--text);
+  }
+  .timeline-actor {
+    font-size: 10px;
+    color: var(--text-faint);
+    margin-top: 2px;
+  }
+
+  /* ─── MEETINGS ─── */
+  .meeting-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .meeting-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-top: 3px solid var(--accent-5);
+    transition: all 0.15s;
+  }
+  .meeting-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+  }
+  .meeting-time {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--accent-5);
+    text-transform: uppercase;
+  }
+  .meeting-topic {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 8px 0 12px;
+    line-height: 1.3;
+  }
+  .meeting-decision {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .meeting-decision-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center;
+    padding: 80px 32px;
+    color: var(--text-faint);
+  }
+  .empty-state h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .empty-state code {
+    color: var(--accent);
+    background: var(--bg-elev);
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  /* ─── COMPANY ─── */
+  .company-view {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .profile-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    border-left: 4px solid var(--accent);
+    position: relative;
+  }
+  .profile-card::before {
+    content: 'PROJECT';
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-faint);
+  }
+  .profile-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .profile-domain {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .profile-stat .label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+  }
+  .profile-stat .value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  .experts-section {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+  .experts-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .experts-section-header h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .experts-section-header .hint {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+  }
+  .experts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .expert-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 18px;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .expert-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+  }
+  .expert-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent-3);
+  }
+  .expert-card[data-model="opus"]::before    { background: var(--accent-4); }
+  .expert-card[data-model="sonnet"]::before  { background: var(--accent-3); }
+  .expert-card[data-model="haiku"]::before   { background: var(--accent-5); }
+
+  .expert-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    word-break: break-all;
+  }
+  .expert-model {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 2px 8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .expert-card[data-model="opus"] .expert-model    { color: var(--accent-4); background: rgba(247,118,142,0.1); }
+  .expert-card[data-model="sonnet"] .expert-model  { color: var(--accent-3); background: rgba(122,162,247,0.1); }
+  .expert-card[data-model="haiku"] .expert-model   { color: var(--accent-5); background: rgba(224,175,104,0.1); }
+
+  .expert-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .expert-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+  }
+  .expert-card.common::after {
+    content: 'COMMON';
+    position: absolute;
+    bottom: 12px; right: 12px;
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  /* ─── FOOTER ─── */
+  .ticker {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-elev);
+    border-top: 1px solid var(--border);
+    padding: 8px 32px;
+    font-size: 10px;
+    color: var(--text-faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 1px;
+  }
+  .ticker-left { display: flex; gap: 16px; }
+  .ticker-left .accent { color: var(--accent); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1100px) {
+    .board { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .board { grid-template-columns: 1fr; }
+    .topbar, .tabs, main, .ticker { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">AI</div>
+    <div class="brand-text">
+      AI Company
+      <small id="brand-sub">Operations Console</small>
+    </div>
+  </div>
+  <div class="status-pill" id="status-pill">
+    <span class="status-dot"></span>
+    <span id="status-text">Loading…</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="kanban">
+    Kanban <span class="count" id="cnt-tasks">0</span>
+  </button>
+  <button class="tab" data-tab="timeline">
+    Timeline <span class="count" id="cnt-events">0</span>
+  </button>
+  <button class="tab" data-tab="meetings">
+    Meetings <span class="count" id="cnt-meetings">0</span>
+  </button>
+  <button class="tab" data-tab="company">
+    Company <span class="count" id="cnt-experts">0</span>
+  </button>
+</nav>
+
+<main>
+  <section class="metrics" id="metrics"></section>
+  <section id="tab-content"></section>
+</main>
+
+<footer class="ticker">
+  <div class="ticker-left">
+    <span>SYSTEM <span class="accent">ONLINE</span></span>
+    <span>LAST SYNC <span id="last-sync">—</span></span>
+    <span>AUTO-REFRESH 5s</span>
+  </div>
+  <div>v0.1.0 · plugin://ai-company</div>
+</footer>
+
+<script>
+// ─── Configuration ───
+const DATA_URL = './data.json';
+const REFRESH_INTERVAL_MS = 5000;
+let currentTab = 'kanban';
+let lastData = null;
+
+// ─── Fetch & Render ───
+async function fetchData() {
+  try {
+    const res = await fetch(DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    lastData = data;
+    document.getElementById('status-text').textContent = 'Live · 데이터 동기화됨';
+    document.getElementById('last-sync').textContent = new Date().toLocaleTimeString('ko-KR');
+    render();
+  } catch (e) {
+    document.getElementById('status-text').textContent = '데이터 없음 · ' + e.message;
+    if (!lastData) renderEmpty();
+  }
+}
+
+function renderEmpty() {
+  document.getElementById('metrics').innerHTML = '';
+  document.getElementById('tab-content').innerHTML = `
+    <div class="empty-state">
+      <h2>데이터가 아직 없습니다</h2>
+      <p>다음 명령을 Claude Code에서 실행하세요:</p>
+      <p style="margin-top:16px;"><code>/company-init</code> · <code>/new-request &lt;내용&gt;</code></p>
+    </div>
+  `;
+}
+
+function render() {
+  if (!lastData || !lastData.tasks) { renderEmpty(); return; }
+  renderMetrics(lastData.metrics || {});
+  renderBrand(lastData.company_profile);
+  document.getElementById('cnt-tasks').textContent = (lastData.tasks || []).length;
+  document.getElementById('cnt-events').textContent = (lastData.tasks || []).length + (lastData.meetings || []).length;
+  document.getElementById('cnt-meetings').textContent = (lastData.meetings || []).length;
+  document.getElementById('cnt-experts').textContent = (lastData.experts || []).length + 1; // +1 for chronicler
+
+  if (currentTab === 'kanban') renderKanban();
+  else if (currentTab === 'timeline') renderTimeline();
+  else if (currentTab === 'meetings') renderMeetings();
+  else if (currentTab === 'company') renderCompany();
+}
+
+function renderBrand(profile) {
+  if (profile && profile.project_name) {
+    document.getElementById('brand-sub').textContent =
+      profile.project_name + (profile.domain ? ' · ' + profile.domain : '');
+  }
+}
+
+function renderMetrics(m) {
+  const items = [
+    { key: 'tasks_completed_today', label: 'Done Today',  cls: 'green'  },
+    { key: 'tasks_in_progress',     label: 'In Progress', cls: 'amber'  },
+    { key: 'tasks_pending',         label: 'Pending',     cls: 'blue'   },
+    { key: 'tasks_blocked',         label: 'Blocked',     cls: 'pink'   },
+    { key: 'meetings_today',        label: 'Meetings',    cls: 'orange' },
+  ];
+  document.getElementById('metrics').innerHTML = items.map(it => `
+    <div class="metric ${it.cls}">
+      <div class="label">${it.label}</div>
+      <div class="value">${m[it.key] ?? 0}</div>
+    </div>
+  `).join('');
+}
+
+function renderKanban() {
+  const columns = [
+    { status: 'pending',     label: 'Pending'     },
+    { status: 'in_progress', label: 'In Progress' },
+    { status: 'completed',   label: 'Done'        },
+    { status: 'blocked',     label: 'Blocked'     },
+  ];
+  const tasks = lastData.tasks || [];
+  const html = `
+    <div class="board">
+      ${columns.map(col => {
+        const colTasks = tasks.filter(t => t.status === col.status);
+        return `
+          <div class="column" data-status="${col.status}">
+            <div class="column-header">
+              <h3><span class="col-icon"></span>${col.label}</h3>
+              <span class="col-count">${colTasks.length}</span>
+            </div>
+            <div class="card-list">
+              ${colTasks.length === 0
+                ? `<div class="empty-col">— 없음 —</div>`
+                : colTasks.map(renderCard).join('')}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  document.getElementById('tab-content').innerHTML = html;
+}
+
+function renderCard(t) {
+  const time = t.completed_at || t.started_at || t.created_at;
+  const timeStr = time ? new Date(time).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
+  const deps = (t.dependencies || []).length > 0
+    ? `<div class="card-deps">DEPS → <span>${t.dependencies.join(', ')}</span></div>` : '';
+  return `
+    <div class="card">
+      <div class="card-id">${escape(t.id)}</div>
+      <div class="card-title">${escape(t.title || 'untitled')}</div>
+      <div class="card-meta">
+        <span class="card-assignee">${escape(t.assigned_to || '?')}</span>
+        <span class="card-time">${timeStr}</span>
+      </div>
+      ${deps}
+    </div>
+  `;
+}
+
+function renderTimeline() {
+  const tasks = lastData.tasks || [];
+  const meetings = lastData.meetings || [];
+
+  const events = [];
+  tasks.forEach(t => {
+    if (t.created_at) events.push({ ts: t.created_at, type: 'task_created', actor: t.assigned_to, desc: `Task created: ${t.title || t.id}`, id: t.id });
+    if (t.started_at) events.push({ ts: t.started_at, type: 'task_started', actor: t.assigned_to, desc: `시작: ${t.title || t.id}`, id: t.id });
+    if (t.completed_at) events.push({ ts: t.completed_at, type: 'task_completed', actor: t.assigned_to, desc: `완료: ${t.title || t.id}`, id: t.id });
+  });
+  meetings.forEach(m => {
+    events.push({ ts: m.started_at, type: 'meeting_concluded', actor: 'command-center', desc: m.topic, id: m.id });
+  });
+
+  events.sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+
+  const html = `
+    <div class="timeline-view">
+      <div class="timeline-list">
+        ${events.length === 0
+          ? `<div class="empty-col">이벤트가 없습니다.</div>`
+          : events.map(ev => `
+              <div class="timeline-item" data-type="${ev.type}">
+                <div class="timeline-time">${ev.ts ? new Date(ev.ts).toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit'}) : '—'}</div>
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                  <div class="timeline-type">${ev.type.replace(/_/g,' ')}</div>
+                  <div class="timeline-desc">${escape(ev.desc)}</div>
+                  <div class="timeline-actor">${escape(ev.actor || 'system')}</div>
+                </div>
+              </div>
+            `).join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById('tab-content').innerHTML = html;
+}
+
+function renderMeetings() {
+  const meetings = lastData.meetings || [];
+  const html = meetings.length === 0
+    ? `<div class="empty-state"><h2>회의록이 없습니다</h2></div>`
+    : `<div class="meeting-list">${meetings.map(m => `
+        <div class="meeting-card">
+          <div class="meeting-time">${m.started_at ? new Date(m.started_at).toLocaleString('ko-KR') : ''}</div>
+          <div class="meeting-topic">${escape(m.topic || 'untitled')}</div>
+          ${m.decision ? `
+            <div class="meeting-decision">
+              <span class="meeting-decision-label">DECISION</span>
+              ${escape(m.decision)}
+            </div>` : ''}
+        </div>
+      `).join('')}</div>`;
+  document.getElementById('tab-content').innerHTML = html;
+}
+
+function renderCompany() {
+  const profile = lastData.company_profile || {};
+  const experts = lastData.experts || [];
+
+  // chronicler를 항상 마지막에 표시 (공통)
+  const chronicler = {
+    name: 'chronicler',
+    model: 'haiku',
+    description: '회사의 공식 사관. 모든 회의·작업·이벤트를 기록합니다. 플러그인 공통 전문가로, 모든 프로젝트에 자동 포함됩니다.',
+    common: true
+  };
+  const allExperts = [...experts.filter(e => e.name !== 'chronicler'), chronicler];
+
+  const profileSection = profile.project_name ? `
+    <div class="profile-card">
+      <div class="profile-name">${escape(profile.project_name)}</div>
+      <div class="profile-domain">${escape(profile.domain || 'domain unknown')}</div>
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <div class="label">Experts</div>
+          <div class="value">${allExperts.length}명</div>
+        </div>
+        <div class="profile-stat">
+          <div class="label">Total Tasks</div>
+          <div class="value">${(lastData.tasks || []).length}</div>
+        </div>
+        <div class="profile-stat">
+          <div class="label">Meetings</div>
+          <div class="value">${(lastData.meetings || []).length}</div>
+        </div>
+        <div class="profile-stat">
+          <div class="label">Last Sync</div>
+          <div class="value" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+            ${lastData.last_updated ? new Date(lastData.last_updated).toLocaleTimeString('ko-KR') : '—'}
+          </div>
+        </div>
+      </div>
+    </div>
+  ` : `<div class="empty-state"><h2>회사 프로필이 없습니다</h2>
+        <p>먼저 <code>/company-init</code>을 실행하세요.</p></div>`;
+
+  const expertsSection = `
+    <div class="experts-section">
+      <div class="experts-section-header">
+        <h3>Experts on Staff</h3>
+        <div class="hint">이 프로젝트만의 동적 생성 전문가 + 공통 사관</div>
+      </div>
+      ${allExperts.length === 0
+        ? `<div class="empty-col">전문가가 없습니다.</div>`
+        : `<div class="experts-grid">
+            ${allExperts.map(e => `
+              <div class="expert-card ${e.common ? 'common' : ''}" data-model="${escape(e.model || 'sonnet')}">
+                <span class="expert-badge">EXPERT</span>
+                <div class="expert-name">${escape(e.name || '?')}</div>
+                <span class="expert-model">${escape(e.model || 'sonnet')}</span>
+                <div class="expert-desc">${escape(e.description || '— 설명 없음 —')}</div>
+              </div>
+            `).join('')}
+          </div>`}
+    </div>
+  `;
+
+  document.getElementById('tab-content').innerHTML = `
+    <div class="company-view">
+      ${profileSection}
+      ${expertsSection}
+    </div>
+  `;
+}
+
+function escape(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+// ─── Tab Switching ───
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = btn.dataset.tab;
+    render();
+  });
+});
+
+// ─── Boot ───
+fetchData();
+setInterval(fetchData, REFRESH_INTERVAL_MS);
+</script>
+
+</body>
+</html>

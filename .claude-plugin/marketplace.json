@@ -1,0 +1,19 @@
+{
+  "name": "ai-company",
+  "owner": {
+    "name": "Ale (WHS95)",
+    "url": "https://github.com/WHS95"
+  },
+  "homepage": "https://github.com/WHS95/ai-company",
+  "plugins": [
+    {
+      "name": "ai-company",
+      "source": ".",
+      "description": "프로젝트를 분석하여 그 프로젝트만의 전문가들을 동적으로 생성하는 AI 개발 회사 플러그인. 정적 라이브러리 없이, 매 프로젝트마다 다른 회사를 차립니다. 회장 승인 절차, 회의 프로토콜, 칸반 대시보드 포함.",
+      "version": "0.2.0",
+      "category": "orchestration",
+      "tags": ["agent-teams", "fullstack", "kanban", "tmux", "dynamic-agents"],
+      "homepage": "https://github.com/WHS95/ai-company"
+    }
+  ]
+}

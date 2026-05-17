@@ -1,0 +1,107 @@
+name: Validate Plugin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate plugin structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Validate plugin.json
+        run: |
+          echo "Validating .claude-plugin/plugin.json..."
+          jq -e '.name and .version and .description' .claude-plugin/plugin.json
+          echo "✓ plugin.json structure OK"
+
+      - name: Validate marketplace.json
+        run: |
+          echo "Validating .claude-plugin/marketplace.json..."
+          jq -e '.name and .plugins and (.plugins | length > 0)' .claude-plugin/marketplace.json
+          echo "✓ marketplace.json structure OK"
+
+      - name: Validate hooks.json
+        run: |
+          echo "Validating hooks/hooks.json..."
+          jq -e '.hooks' hooks/hooks.json
+          echo "✓ hooks.json structure OK"
+
+      - name: Validate sample data
+        run: |
+          echo "Validating dashboard/data.sample.json..."
+          jq -e '.tasks and .meetings and .metrics' dashboard/data.sample.json
+          echo "✓ data.sample.json structure OK"
+
+      - name: Check shell scripts syntax
+        run: |
+          for f in hooks/*.sh install.sh; do
+            echo "Checking $f..."
+            bash -n "$f"
+          done
+          echo "✓ All shell scripts have valid syntax"
+
+      - name: Check agent card frontmatter
+        run: |
+          for card in agents/*.md; do
+            if ! head -1 "$card" | grep -q '^---'; then
+              echo "✗ $card: missing frontmatter"
+              exit 1
+            fi
+            if ! grep -q '^name:' "$card"; then
+              echo "✗ $card: missing 'name' field"
+              exit 1
+            fi
+            if ! grep -q '^description:' "$card"; then
+              echo "✗ $card: missing 'description' field"
+              exit 1
+            fi
+            if ! grep -q '^model:' "$card"; then
+              echo "✗ $card: missing 'model' field"
+              exit 1
+            fi
+            echo "✓ $card"
+          done
+
+      - name: Check command card frontmatter
+        run: |
+          for cmd in commands/*.md; do
+            if ! head -1 "$cmd" | grep -q '^---'; then
+              echo "✗ $cmd: missing frontmatter"
+              exit 1
+            fi
+            if ! grep -q '^description:' "$cmd"; then
+              echo "✗ $cmd: missing 'description' field"
+              exit 1
+            fi
+            echo "✓ $cmd"
+          done
+
+      - name: Verify required files exist
+        run: |
+          for f in README.md LICENSE CHANGELOG.md CLAUDE.md .claude-plugin/plugin.json .claude-plugin/marketplace.json install.sh; do
+            if [ ! -f "$f" ]; then
+              echo "✗ Required file missing: $f"
+              exit 1
+            fi
+            echo "✓ $f"
+          done
+
+      - name: Dashboard HTML sanity check
+        run: |
+          if [ ! -f dashboard/index.html ]; then
+            echo "✗ dashboard/index.html missing"
+            exit 1
+          fi
+          if ! grep -q "fetchData" dashboard/index.html; then
+            echo "✗ dashboard/index.html missing fetchData function"
+            exit 1
+          fi
+          echo "✓ dashboard/index.html OK"

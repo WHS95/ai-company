@@ -57,9 +57,9 @@ estimated_complexity: <small|medium|large|enterprise>
 `company-profile.yaml`을 보고 **이 프로젝트에 진짜 필요한 전문가들**을 도출합니다.
 
 - 일반적이지 마십시오. **프로젝트 고유의 needs**에 답하는 전문가여야 합니다.
-- 예시 (PMGrow 같은 IoT 차량 텔레메트리 프로젝트):
+- 예시 (IoT 데이터 수집 플랫폼):
   - ❌ `backend`, `frontend`, `dba` (너무 일반적, 어떤 프로젝트나 똑같음)
-  - ✅ `nestjs-modular-architect`, `mqtt-streaming-engineer`, `mongodb-changestream-specialist`, `grafana-dashboard-engineer`, `iot-device-protocol-expert`
+  - ✅ `nestjs-modular-architect`, `mqtt-streaming-engineer`, `timeseries-data-modeler`, `grafana-dashboard-engineer`, `iot-device-protocol-expert`
 - 예시 (e-commerce 프로젝트):
   - ✅ `cart-checkout-flow-engineer`, `payment-gateway-integrator`, `inventory-sync-specialist`, `order-state-machine-designer`
 

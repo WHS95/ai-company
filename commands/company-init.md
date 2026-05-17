@@ -83,7 +83,7 @@ tech_stack:
   infrastructure: [<감지된 것만>]
 critical_concerns:
   - <이 프로젝트가 신경 써야 할 구체적 사항>
-  - <예: "고빈도 실시간 데이터 수집 (MQTT 일 40,000건)">
+  - <예: "결제 멱등성 보장", "PII 데이터 암호화", "고빈도 실시간 이벤트 처리">
 estimated_complexity: <small|medium|large|enterprise>
 notes: |
   <자유 형식 메모. 분석 중 발견한 특이사항>

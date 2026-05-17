@@ -118,7 +118,7 @@ tools: Read, Write, Edit, Bash
   "generated_at": "...",
   "company_profile": {
     "project_name": "<프로젝트명>",
-    "domain": "<도메인 (예: ev-telematics)>",
+    "domain": "<도메인 (예: e-commerce, fintech, iot, saas)>",
     "experts_active": ["<전문가1>", "<전문가2>", ...]
   },
   "current_team": {

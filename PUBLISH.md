@@ -90,7 +90,7 @@ git push origin v0.2.0
 이걸 다음 채널에 알리세요:
 - 블로그 ([coding-daily.tistory.com](https://coding-daily.tistory.com))
 - `awesome-claude-plugins` 같은 디렉토리에 PR
-- 사내 PMGrow 슬랙
+- 사내 개발팀 슬랙
 - 트위터/X, LinkedIn
 
 ---
